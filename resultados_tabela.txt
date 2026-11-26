@@ -1,0 +1,26 @@
+﻿Benchmark de algoritmos de ordenacao
+Compilador: gcc 15.2.0 | semente: 12345 | repeticoes: 3 a 10
+
+Experimento 1: tempo x tamanho do vetor (tempo medio, em ms)
+Algoritmo               N=10        N=50       N=100     N=1.000    N=10.000    N=50.000   N=100.000   N=500.000 N=1.000.000
+Bubble Sort         0.000095    0.002941      0.0125        1.37         192        4988       20137      762341           -
+Selection Sort      0.000101    0.002852      0.0108        1.13         115        2886       11598      288794           -
+Insertion Sort      0.000017    0.000203    0.000777      0.0704        6.09         145         574       14190           -
+Merge Sort          0.000081    0.000418    0.001089      0.0242      0.5347        3.11        6.43       36.94       77.20
+Quick Sort          0.000041    0.000243    0.000609      0.0191      0.4171        2.45        5.17       29.21       61.79
+Heap Sort           0.000037    0.000296    0.000689      0.0364      0.6270        3.64        7.49       43.76       97.09
+Counting Sort         0.7131        1.07        1.20        1.32        1.43        2.21        2.61        5.72       16.17
+Radix Sort          0.000376    0.001614    0.003211      0.0311      0.3012        1.45        2.89       15.22       30.58
+Bucket Sort         0.000146    0.000352    0.000597    0.005138      0.1175      0.7873        1.72        7.90       16.11
+
+(N = 1000000)
+Experimento 2: tempo x amplitude dos valores (tempo medio, em ms)
+Algoritmo            K=1.000   K=100.000 K=1.000.000K=10.000.000
+Merge Sort             56.63       75.41       77.43       77.65
+Quick Sort               162       55.62       61.46       61.57
+Heap Sort              80.57       96.71       96.06       97.81
+Counting Sort           3.77        7.29        9.80       32.84
+Radix Sort             15.90       25.52       30.34       35.40
+Bucket Sort             9.50       22.78       16.12       23.32
+
+Resultados salvos em resultados.csv e resultados_k.csv

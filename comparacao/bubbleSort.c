@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 
 void bubbleSort(int *v, int n) {
@@ -18,6 +17,7 @@ void bubbleSort(int *v, int n) {
     }
 }
 
+#ifndef BENCHMARK
 // Teste simples
 int main() {
     int v[] = {9, 8, 7, 6, 5, 4, 3, 12};
@@ -33,3 +33,4 @@ int main() {
 
     return 0;
 }
+#endif
