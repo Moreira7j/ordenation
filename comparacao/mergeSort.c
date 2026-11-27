@@ -36,12 +36,18 @@ void mergeSortRec(int *v, int *aux, int ini, int fim) {
     intercalar(v, aux, ini, meio, fim);
 }
 
+// Recebe o vetor auxiliar (n posições) já alocado.
+// O benchmark usa esta versão para não medir o tempo de alocação.
+void mergeSortAux(int *v, int n, int *aux) {
+    if (n > 1) mergeSortRec(v, aux, 0, n - 1);
+}
+
+// Versão de uso geral: aloca o auxiliar sozinha (espaço extra O(n))
 void mergeSort(int *v, int n) {
-    // vetor auxiliar alocado uma única vez: espaço extra O(n)
     int *aux = malloc(n * sizeof(int));
     if (aux == NULL) return;
 
-    mergeSortRec(v, aux, 0, n - 1);
+    mergeSortAux(v, n, aux);
     free(aux);
 }
 

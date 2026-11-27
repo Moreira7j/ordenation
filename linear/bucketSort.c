@@ -4,10 +4,13 @@
 // Bucket Sort: distribui os valores em n baldes por faixa de valor,
 // ordena cada balde com Insertion Sort e concatena.
 // Eficiente quando os valores são distribuídos de forma uniforme.
-void bucketSort(int *v, int n) {
+//
+// Recebe os vetores de trabalho já alocados (balde, pos e aux com n
+// posições; inicio com n + 1). O benchmark usa esta versão para não
+// medir a alocação.
+void bucketSortAux(int *v, int n, int *balde, int *inicio, int *pos, int *aux) {
     int i, j, b, chave, min, max;
     long long faixa;
-    int *balde, *inicio, *pos, *aux;
 
     if (n <= 1) return;
 
@@ -19,13 +22,9 @@ void bucketSort(int *v, int n) {
     }
     faixa = (long long)max - min + 1;
 
-    balde  = malloc(n * sizeof(int));       // balde de cada elemento
-    inicio = calloc(n + 1, sizeof(int));    // onde cada balde começa
-    pos    = malloc(n * sizeof(int));       // próxima posição livre do balde
-    aux    = malloc(n * sizeof(int));
-    if (!balde || !inicio || !pos || !aux) {
-        free(balde); free(inicio); free(pos); free(aux);
-        return;
+    // zera o tamanho dos baldes
+    for (b = 0; b <= n; b++) {
+        inicio[b] = 0;
     }
 
     // 1) calcula o balde de cada valor e conta o tamanho dos baldes
@@ -61,6 +60,18 @@ void bucketSort(int *v, int n) {
     // 5) baldes em ordem = vetor ordenado
     for (i = 0; i < n; i++) {
         v[i] = aux[i];
+    }
+}
+
+// Versão de uso geral: aloca os vetores de trabalho sozinha
+void bucketSort(int *v, int n) {
+    int *balde  = malloc(n * sizeof(int));          // balde de cada elemento
+    int *inicio = malloc((n + 1) * sizeof(int));    // onde cada balde começa
+    int *pos    = malloc(n * sizeof(int));          // próxima posição livre
+    int *aux    = malloc(n * sizeof(int));
+
+    if (balde && inicio && pos && aux) {
+        bucketSortAux(v, n, balde, inicio, pos, aux);
     }
 
     free(balde); free(inicio); free(pos); free(aux);
