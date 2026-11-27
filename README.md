@@ -74,7 +74,12 @@ novamente, rode o script de novo para atualizar os gráficos.
   cada algoritmo.
 - O cronômetro (`QueryPerformanceCounter`) mede somente a chamada da
   ordenação; geração, cópia e verificação ficam fora da medição.
+- Os vetores auxiliares de Merge, Counting, Radix e Bucket Sort são alocados
+  uma única vez, antes de qualquer medição, e passados prontos para as
+  funções (versões `...Aux`). Assim o tempo de alocação de memória não entra
+  no resultado.
 - Cada medição é repetida no mínimo 3 vezes (até 10 nos casos rápidos) e é
   registrada a média.
 - Todo resultado é comparado com a saída do `qsort` da biblioteca padrão.
 - Algoritmos O(n²) são executados até N = 500.000.
+

@@ -32,6 +32,43 @@
 #include "linear/radixSort.c"
 #include "linear/bucketSort.c"
 
+/* Memória de trabalho */
+
+// Merge, Counting, Radix e Bucket precisam de vetores auxiliares. Eles são
+// alocados uma vez só, antes de qualquer medição, e passados prontos para
+// as funções. Assim o tempo de alocação não entra no resultado.
+static int *trabAux, *trabCont, *trabBalde, *trabInicio, *trabPos;
+
+static void mergeSortBench(int *v, int n)    { mergeSortAux(v, n, trabAux); }
+static void countingSortBench(int *v, int n) { countingSortAux(v, n, trabCont, trabAux); }
+static void radixSortBench(int *v, int n)    { radixSortAux(v, n, trabAux); }
+static void bucketSortBench(int *v, int n) {
+    bucketSortAux(v, n, trabBalde, trabInicio, trabPos, trabAux);
+}
+
+// maxN: maior vetor testado; maxK: maior amplitude de valores
+static int alocarTrabalho(int maxN, int maxK) {
+    trabAux    = malloc((size_t)maxN * sizeof(int));
+    trabBalde  = malloc((size_t)maxN * sizeof(int));
+    trabPos    = malloc((size_t)maxN * sizeof(int));
+    trabInicio = malloc(((size_t)maxN + 1) * sizeof(int));
+    trabCont   = malloc((size_t)maxK * sizeof(int));
+    if (!trabAux || !trabBalde || !trabPos || !trabInicio || !trabCont) return 0;
+
+    // escreve em tudo uma vez, para o sistema já entregar a memória de
+    // verdade agora, e não durante a primeira medição
+    memset(trabAux,    0, (size_t)maxN * sizeof(int));
+    memset(trabBalde,  0, (size_t)maxN * sizeof(int));
+    memset(trabPos,    0, (size_t)maxN * sizeof(int));
+    memset(trabInicio, 0, ((size_t)maxN + 1) * sizeof(int));
+    memset(trabCont,   0, (size_t)maxK * sizeof(int));
+    return 1;
+}
+
+static void liberarTrabalho(void) {
+    free(trabAux); free(trabBalde); free(trabPos); free(trabInicio); free(trabCont);
+}
+
 /* Configuração do experimento */
 
 #define SEMENTE            12345      // semente fixa: o vetor sai sempre igual
@@ -64,12 +101,12 @@ static const Algoritmo ALGORITMOS[] = {
     {"Bubble Sort",    "Comparacao O(n^2)",     bubbleSort,    1},
     {"Selection Sort", "Comparacao O(n^2)",     selectionSort, 1},
     {"Insertion Sort", "Comparacao O(n^2)",     insertionSort, 1},
-    {"Merge Sort",     "Comparacao O(n log n)", mergeSort,     0},
-    {"Quick Sort",     "Comparacao O(n log n)", quickSort,     0},
-    {"Heap Sort",      "Comparacao O(n log n)", heapSort,      0},
-    {"Counting Sort",  "Linear O(n + k)",       countingSort,  0},
-    {"Radix Sort",     "Linear O(d(n + b))",    radixSort,     0},
-    {"Bucket Sort",    "Linear O(n + k)",       bucketSort,    0},
+    {"Merge Sort",     "Comparacao O(n log n)", mergeSortBench,    0},
+    {"Quick Sort",     "Comparacao O(n log n)", quickSort,         0},
+    {"Heap Sort",      "Comparacao O(n log n)", heapSort,          0},
+    {"Counting Sort",  "Linear O(n + k)",       countingSortBench, 0},
+    {"Radix Sort",     "Linear O(d(n + b))",    radixSortBench,    0},
+    {"Bucket Sort",    "Linear O(n + k)",       bucketSortBench,   0},
 };
 #define N_ALGORITMOS ((int)(sizeof(ALGORITMOS) / sizeof(ALGORITMOS[0])))
 
@@ -240,6 +277,8 @@ static void imprimirTabela(const char *titulo, const char *rotulo,
 
 int main(int argc, char *argv[]) {
     int rapido = (argc > 1 && strcmp(argv[1], "rapido") == 0);
+    // pula os O(n²): útil para medir de novo só os rápidos
+    int semQuadraticos = (argc > 1 && strcmp(argv[1], "sem_quadraticos") == 0);
     int nTam = N_TAMANHOS, nK = rapido ? 100000 : N_EXPERIMENTO_K;
     int t, a, k, lote, n, nLin;
     int todos[N_ALGORITMOS], lineares[N_ALGORITMOS];
@@ -254,6 +293,17 @@ int main(int argc, char *argv[]) {
     if (rapido) {
         nTam = 0;
         while (nTam < N_TAMANHOS && TAMANHOS[nTam] <= 10000) nTam++;
+    }
+
+    // tamanho da memória de trabalho: maior N e maior amplitude usados
+    {
+        int maxN = N_EXPERIMENTO_K, maxK = VALOR_MAX + 1;
+        for (t = 0; t < N_TAMANHOS; t++) if (TAMANHOS[t] > maxN) maxN = TAMANHOS[t];
+        for (k = 0; k < N_AMPLITUDES; k++) if (AMPLITUDES[k] > maxK) maxK = AMPLITUDES[k];
+        if (!alocarTrabalho(maxN, maxK)) {
+            fprintf(stderr, "Sem memoria para os vetores de trabalho\n");
+            return 1;
+        }
     }
 
     printf("Benchmark de algoritmos de ordenacao\n");
@@ -287,7 +337,7 @@ int main(int argc, char *argv[]) {
         qsort(ref, n, sizeof(int), comparar);
 
         for (a = 0; a < N_ALGORITMOS; a++) {
-            if (ALGORITMOS[a].quadratico && n > LIMITE_QUADRATICO) {
+            if (ALGORITMOS[a].quadratico && (n > LIMITE_QUADRATICO || semQuadraticos)) {
                 res1[a * N_TAMANHOS + t] = PULADO;
                 continue;
             }
@@ -366,6 +416,7 @@ int main(int argc, char *argv[]) {
     imprimirTabela("Experimento 2: tempo x amplitude dos valores", "K",
                    AMPLITUDES, N_AMPLITUDES, lineares, nLin, res2);
 
+    liberarTrabalho();
     printf("\nResultados salvos em resultados.csv e resultados_k.csv\n");
     return 0;
 }

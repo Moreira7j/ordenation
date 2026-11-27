@@ -27,10 +27,11 @@ void ordenarPorDigito(int *v, int *aux, int n, long long exp) {
 
 // Radix Sort LSD (base 10): ordena dígito a dígito, do menos para o
 // mais significativo. Requer inteiros não negativos.
-void radixSort(int *v, int n) {
+// Recebe o vetor auxiliar (n posições) já alocado; o benchmark usa
+// esta versão para não medir o tempo de alocação.
+void radixSortAux(int *v, int n, int *aux) {
     int i, max;
     long long exp;
-    int *aux;
 
     if (n <= 1) return;
 
@@ -40,14 +41,18 @@ void radixSort(int *v, int n) {
         if (v[i] > max) max = v[i];
     }
 
-    aux = malloc(n * sizeof(int));
-    if (aux == NULL) return;
-
     // exp = 1, 10, 100, ... (unidade, dezena, centena, ...)
     for (exp = 1; max / exp > 0; exp *= 10) {
         ordenarPorDigito(v, aux, n, exp);
     }
+}
 
+// Versão de uso geral: aloca o auxiliar sozinha
+void radixSort(int *v, int n) {
+    int *aux = malloc(n * sizeof(int));
+    if (aux == NULL) return;
+
+    radixSortAux(v, n, aux);
     free(aux);
 }
 
